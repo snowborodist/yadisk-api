@@ -1,0 +1,5 @@
+fastapi==0.75.1
+uvicorn==0.18.3
+sqlalchemy==1.4.37
+databases[postgresql]==0.6.1
+pydantic[dotenv]==1.9.0
