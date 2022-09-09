@@ -10,5 +10,6 @@ router = APIRouter(prefix="/imports")
 async def post_imports(
         imports: SystemItemImportRequest,
         service: ImportsService = Depends()):
+    await service.foo()
     print(imports.dict())
     return 200
