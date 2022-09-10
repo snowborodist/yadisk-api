@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from fastapi import APIRouter, Depends
 
 from ..services.imports import ImportsService
@@ -10,6 +11,5 @@ router = APIRouter(prefix="/imports")
 async def post_imports(
         imports: SystemItemImportRequest,
         service: ImportsService = Depends()):
-    await service.foo()
-    print(imports.dict())
-    return 200
+    await service.emplace_imports(imports)
+    return HTTPStatus.OK

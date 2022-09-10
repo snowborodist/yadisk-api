@@ -1,14 +1,12 @@
-from fastapi import Depends
-from databases.core import Connection
+from .base import BaseService
+from ..api.schema import SystemItemImportRequest
+from ..db.repositories.SystemItemRepository import SystemItemRepository
 
-from ..utils.db import get_db
 
-
-class ImportsService:
-    def __init__(self, connection: Connection = Depends(get_db)):
-        self._conn = connection
-
-    async def foo(self):
+class ImportsService(BaseService):
+    async def emplace_imports(self, imports: SystemItemImportRequest):
         async with self._conn as conn:
-            result = await conn.execute("SELECT 1;")
-            print(result)
+            repo = SystemItemRepository(conn)
+            pass
+        # TODO: logic here
+

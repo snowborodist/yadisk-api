@@ -1,15 +1,15 @@
-"""initial
+"""initial migration
 
-Revision ID: 21f920be33f4
+Revision ID: daa36032e640
 Revises: 
-Create Date: 2022-09-09 20:29:59.329114
+Create Date: 2022-09-09 20:51:41.171373
 
 """
 from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision = '21f920be33f4'
+revision = 'daa36032e640'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -24,7 +24,7 @@ def upgrade() -> None:
                     sa.Column('parent_id', sa.String(), nullable=True),
                     sa.Column('type', sa.Enum('FILE', 'FOLDER', name='systemitemtype'), nullable=False),
                     sa.Column('size', sa.Integer(), nullable=True),
-                    sa.PrimaryKeyConstraint('id', 'date')
+                    sa.PrimaryKeyConstraint('id', 'date', name=op.f('pk__system_items'))
                     )
     op.create_table('item_tree_paths',
                     sa.Column('id', sa.BigInteger(), autoincrement=True, nullable=False),
@@ -32,11 +32,12 @@ def upgrade() -> None:
                     sa.Column('ancestor_date', sa.DateTime(), nullable=False),
                     sa.Column('descendant_id', sa.String(), nullable=False),
                     sa.Column('descendant_date', sa.DateTime(), nullable=False),
-                    sa.ForeignKeyConstraint(['ancestor_id', 'ancestor_date'],
-                                            ['system_items.id', 'system_items.date'], ),
+                    sa.ForeignKeyConstraint(['ancestor_id', 'ancestor_date'], ['system_items.id', 'system_items.date'],
+                                            name=op.f('fk__item_tree_paths__ancestor_id_ancestor_date__system_items')),
                     sa.ForeignKeyConstraint(['descendant_id', 'descendant_date'],
-                                            ['system_items.id', 'system_items.date'], ),
-                    sa.PrimaryKeyConstraint('id')
+                                            ['system_items.id', 'system_items.date'], name=op.f(
+                            'fk__item_tree_paths__descendant_id_descendant_date__system_items')),
+                    sa.PrimaryKeyConstraint('id', name=op.f('pk__item_tree_paths'))
                     )
     # ### end Alembic commands ###
 

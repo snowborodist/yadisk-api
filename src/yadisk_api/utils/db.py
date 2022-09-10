@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from databases import Database
+from databases.core import Connection
 
 from src.yadisk_api.settings import settings
 
@@ -16,6 +17,5 @@ def init_db(app: FastAPI):
         await database.disconnect()
 
 
-# TODO: Get return type from database docs
-async def get_db() -> any:
+async def get_db() -> Connection:
     return database.connection()
