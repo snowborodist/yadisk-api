@@ -7,7 +7,7 @@ from .schema import SystemItemImportRequest
 router = APIRouter(prefix="/imports")
 
 
-@router.post("/")
+@router.post("")
 async def post_imports(
         imports: SystemItemImportRequest,
         service: ImportsService = Depends()):

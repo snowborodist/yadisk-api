@@ -15,7 +15,7 @@ class DbTypesFactory:
         update = db.SystemItemUpdate(
             item_id=item_import.id,
             parent_id=item_import.parentId,
-            date=date,
+            date=date.replace(tzinfo=None),
             url=item_import.url,
             size=item_import.size
         )
@@ -23,13 +23,16 @@ class DbTypesFactory:
 
     @classmethod
     def system_items(cls, import_request: api.SystemItemImportRequest) \
-            -> list[(db.SystemItem, db.SystemItemUpdate)]:
-        return [
-            cls.system_item(
+            -> (list[db.SystemItem], list[db.SystemItemUpdate]):
+        items = []
+        updates = []
+        for item_import in import_request.items:
+            item, update = cls.system_item(
                 item_import,
                 import_request.updateDate)
-            for item_import in import_request.items
-        ]
+            items.append(item)
+            updates.append(update)
+        return items, updates
 
 
 class ApiTypesFactory:
