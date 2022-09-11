@@ -1,23 +1,24 @@
 from fastapi import FastAPI
-from databases import Database
-from databases.core import Connection
-from sqlalchemy import event
-from sqlalchemy.util.langhelpers import symbol
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 
 from ..settings import settings
 
-database = Database(settings.database_url)
+_engine = create_async_engine(
+    settings.database_url,
+    echo=True,
+)
+
+Session = sessionmaker(
+    _engine,
+    expire_on_commit=False,
+    class_=AsyncSession
+)
 
 
-def init_db(app: FastAPI):
-    @app.on_event("startup")
-    async def startup():
-        await database.connect()
-
-    @app.on_event("shutdown")
-    async def shutdown():
-        await database.disconnect()
-
-
-async def get_db() -> Connection:
-    return database.connection()
+async def get_session() -> AsyncSession:
+    session = Session()
+    try:
+        yield session
+    finally:
+        await session.close()

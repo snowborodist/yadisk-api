@@ -1,6 +1,8 @@
 from .BaseRepository import BaseRepository
 from ...api.schema import SystemItemImportRequest, SystemItem, SystemItemType
 
+from sqlalchemy.dialects.postgresql import insert as pg_insert
+
 
 class SystemItemRepository(BaseRepository):
     async def get_type_if_exists(self, item_id: str) -> SystemItemType | None:
