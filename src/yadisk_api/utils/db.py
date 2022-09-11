@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 from databases import Database
 from databases.core import Connection
+from sqlalchemy import event
+from sqlalchemy.util.langhelpers import symbol
 
-from src.yadisk_api.settings import settings
+from ..settings import settings
 
 database = Database(settings.database_url)
 
