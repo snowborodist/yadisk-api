@@ -17,7 +17,7 @@ class SystemItemImport(BaseModel):
     parentId: str | None
     size: int | None
 
-    @validator("url")
+    @validator("url", always=True)
     def validate_url(cls, url: str | None, values):
         _type = values["type"]
         if _type == SystemItemType.FOLDER and url:
@@ -26,7 +26,7 @@ class SystemItemImport(BaseModel):
             raise ValueError("Item of type 'FILE' should have url")
         return url
 
-    @validator("size")
+    @validator("size", always=True)
     def validate_size(cls, size: int | None, values):
         _type = values["type"]
         if _type == SystemItemType.FOLDER and size:
@@ -37,14 +37,13 @@ class SystemItemImport(BaseModel):
 
     class Config:
         validate_assignment = True
-        # orm_mode =True
 
 
 class SystemItemImportRequest(BaseModel):
     items: list[SystemItemImport]
     updateDate: datetime
 
-    @validator("items")
+    @validator("items", always=True)
     def validate_parents(cls, items: list[SystemItemImport]):
         new_file_ids = set()
         new_parent_rel_ids = set()
@@ -59,7 +58,7 @@ class SystemItemImportRequest(BaseModel):
 
     @property
     def parent_ids(self) -> list[str]:
-        return [item.parentId for item in self.items]
+        return [item.parentId for item in self.items if item.parentId is not None]
 
     class Config:
         validate_assignment = True
@@ -75,6 +74,9 @@ class SystemItemHistoryResponse(BaseModel):
 
 class SystemItem(SystemItemHistoryUnit):
     children: list[SystemItem] | None
+
+    class Config:
+        orm_mode = True
 
 
 class Error(BaseModel):

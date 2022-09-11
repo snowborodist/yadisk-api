@@ -1,14 +1,11 @@
 from .base import BaseService
 from ..api.schema import SystemItemImportRequest
 from ..db.repositories.SystemItemRepository import SystemItemRepository
-from ..utils.type_conversion import DbTypesFactory
 
 
 class ImportsService(BaseService):
     async def emplace_imports(self, imports: SystemItemImportRequest):
         async with self.session.begin():
-            items, updates = DbTypesFactory.system_items(imports)
             repo = SystemItemRepository(self.session)
             await repo.validate_parent_ids(imports.parent_ids)
-            await repo.upsert_items(items)
-            await repo.insert_item_updates(updates)
+            await repo.insert_imports(imports)
