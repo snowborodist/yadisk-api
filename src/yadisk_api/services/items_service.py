@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from ..api.schema import SystemItem, SystemItemHistoryResponse
 from ..services.base import BaseService
 from ..db.repositories.SystemItemRepository import SystemItemRepository
@@ -14,7 +16,15 @@ class ItemsService(BaseService):
             repo = SystemItemRepository(self.session)
             await repo.delete(system_item_id)
 
-    async def get_item_updates(self, system_item_id: str) -> SystemItemHistoryResponse | None:
+    async def get_file_updates(self, date: datetime) -> SystemItemHistoryResponse | None:
         async with self.session.begin():
             repo = SystemItemRepository(self.session)
-            return await repo.get_item_updates(system_item_id)
+            date_start = date - timedelta(days=1)
+            return await repo.get_file_updates(date_start, date)
+
+    async def get_item_history(
+            self, system_item_id: str,
+            date_start: datetime, date_end: datetime) -> SystemItemHistoryResponse | None:
+        async with self.session.begin():
+            repo = SystemItemRepository(self.session)
+            return await repo.get_item_history(system_item_id, date_start, date_end)

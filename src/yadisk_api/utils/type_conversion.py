@@ -36,4 +36,21 @@ class DbTypesFactory:
 
 
 class ApiTypesFactory:
-    pass
+    @staticmethod
+    def history_unit(item: db.SystemItem, update: db.SystemItemUpdate) -> api.SystemItemHistoryUnit:
+        return api.SystemItemHistoryUnit(
+            id=item.id,
+            type=item.type,
+            url=update.url,
+            parentId=update.parent_id,
+            size=update.size,
+            date=update.date
+        )
+
+    @classmethod
+    def history_response(
+            cls, items_updates: list[(db.SystemItem, db.SystemItemUpdate)]) -> api.SystemItemHistoryResponse:
+        return api.SystemItemHistoryResponse(
+            items=[cls.history_unit(item, update)
+                   for item, update in items_updates]
+        )

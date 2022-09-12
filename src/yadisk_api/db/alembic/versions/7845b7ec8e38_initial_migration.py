@@ -40,7 +40,7 @@ def upgrade() -> None:
         CREATE FUNCTION check_type_change() RETURNS TRIGGER LANGUAGE plpgsql AS $$
         BEGIN
             IF OLD.type <> NEW.type THEN
-                RAISE EXCEPTION 'cannot change type'; 
+                RAISE EXCEPTION 'system_items.type field is immutable'; 
             END IF;
             RETURN NEW;
         END $$;

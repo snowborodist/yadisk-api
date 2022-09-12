@@ -1,3 +1,4 @@
+from datetime import datetime
 from sqlalchemy import delete
 from sqlalchemy.future import select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -5,7 +6,7 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from .BaseRepository import BaseRepository
 from ...db import model as db
 from ...api import schema as api
-from ...utils.type_conversion import DbTypesFactory
+from ...utils.type_conversion import DbTypesFactory, ApiTypesFactory
 
 
 class SystemItemRepository(BaseRepository):
@@ -69,8 +70,20 @@ class SystemItemRepository(BaseRepository):
         stmt = delete(db.SystemItem).where(db.SystemItem.id == system_item_id)
         await self.session.execute(stmt)
 
-    async def get_item_updates(self, system_item_id: str) -> api.SystemItemHistoryResponse:
-        pass
+    async def get_file_updates(
+            self, date_start: datetime, date_end: datetime) -> api.SystemItemHistoryResponse:
+        # noinspection PyUnresolvedReferences
+        stmt = select(db.SystemItem, db.SystemItemUpdate) \
+            .join(db.SystemItem, db.SystemItemUpdate.item_id == db.SystemItem.id) \
+            .filter(db.SystemItem.type == db.SystemItemType.FILE,
+                    db.SystemItemUpdate.date.between(date_start, date_end))
+        rows = await self.session.execute(stmt)
+        return ApiTypesFactory.history_response(rows)
+
+    async def get_item_history(
+            self, system_item_id: str,
+            date_start: datetime, date_end: datetime) -> api.SystemItemHistoryResponse:
+        raise NotImplementedError
 
     async def _upsert_items(self, items: list[db.SystemItem]):
         values = [{"id": item.id, "type": item.type} for item in items]

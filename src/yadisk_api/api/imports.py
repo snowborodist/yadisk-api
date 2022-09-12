@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from fastapi import APIRouter, Depends
 
-from ..services.imports import ImportsService
+from ..services.imports_service import ImportsService
 from .schema import SystemItemImportRequest
 
 router = APIRouter(prefix="/imports")
