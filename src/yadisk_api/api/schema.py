@@ -1,6 +1,6 @@
 from __future__ import annotations
 from datetime import datetime
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator, conint
 
 from ..db.model import SystemItemType
 
@@ -10,7 +10,7 @@ class SystemItemImport(BaseModel):
     type: SystemItemType
     url: str | None
     parentId: str | None
-    size: int | None
+    size: conint(ge=0) | None
 
     @validator("url", always=True)
     def validate_url(cls, url: str | None, values):
