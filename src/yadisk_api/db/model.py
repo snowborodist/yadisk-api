@@ -1,8 +1,12 @@
+from enum import Enum as EnumType
 from sqlalchemy import Column, ForeignKey, MetaData
 from sqlalchemy import String, Integer, Enum, DateTime
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 
-from ..api.schema import SystemItemType
+
+class SystemItemType(str, EnumType):
+    FILE = "FILE"
+    FOLDER = "FOLDER"
 
 
 convention = {
@@ -33,7 +37,7 @@ class SystemItemUpdate(Base):
 
     id = Column(Integer, primary_key=True)
     item_id = Column(String, ForeignKey("system_items.id", ondelete="CASCADE"), nullable=False)
-    parent_id = Column(String, ForeignKey("system_items.id"), nullable=True)
+    parent_id = Column(String, ForeignKey("system_items.id", ondelete="CASCADE"), nullable=True)
     date = Column(DateTime(timezone=False), nullable=False)
     url = Column(String, nullable=True)
     size = Column(Integer, nullable=True)

@@ -1,15 +1,15 @@
 """initial migration
 
-Revision ID: 15a472ef3a67
+Revision ID: 7845b7ec8e38
 Revises: 
-Create Date: 2022-09-11 11:29:56.850418
+Create Date: 2022-09-12 10:14:45.629592
 
 """
 from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision = '15a472ef3a67'
+revision = '7845b7ec8e38'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -33,7 +33,7 @@ def upgrade() -> None:
                     sa.ForeignKeyConstraint(['item_id'], ['system_items.id'],
                                             name=op.f('fk__item_updates__item_id__system_items'), ondelete='CASCADE'),
                     sa.ForeignKeyConstraint(['parent_id'], ['system_items.id'],
-                                            name=op.f('fk__item_updates__parent_id__system_items')),
+                                            name=op.f('fk__item_updates__parent_id__system_items'), ondelete='CASCADE'),
                     sa.PrimaryKeyConstraint('id', name=op.f('pk__item_updates'))
                     )
     op.execute("""
@@ -44,7 +44,7 @@ def upgrade() -> None:
             END IF;
             RETURN NEW;
         END $$;
-        
+
         CREATE TRIGGER type_update_trigger BEFORE UPDATE ON system_items FOR EACH ROW
               EXECUTE PROCEDURE check_type_change();
     """)

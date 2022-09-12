@@ -1,13 +1,8 @@
 from __future__ import annotations
-from enum import Enum
 from datetime import datetime
-
 from pydantic import BaseModel, validator
 
-
-class SystemItemType(str, Enum):
-    FILE = "FILE"
-    FOLDER = "FOLDER"
+from ..db.model import SystemItemType
 
 
 class SystemItemImport(BaseModel):
@@ -70,6 +65,9 @@ class SystemItemHistoryUnit(SystemItemImport):
 
 class SystemItemHistoryResponse(BaseModel):
     items: list[SystemItemHistoryUnit]
+
+    class Config:
+        orm_mode = True
 
 
 class SystemItem(SystemItemHistoryUnit):

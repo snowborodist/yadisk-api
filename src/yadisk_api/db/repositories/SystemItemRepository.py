@@ -69,6 +69,9 @@ class SystemItemRepository(BaseRepository):
         stmt = delete(db.SystemItem).where(db.SystemItem.id == system_item_id)
         await self.session.execute(stmt)
 
+    async def get_item_updates(self, system_item_id: str) -> api.SystemItemHistoryResponse:
+        pass
+
     async def _upsert_items(self, items: list[db.SystemItem]):
         values = [{"id": item.id, "type": item.type} for item in items]
         # Use ON CONFLICT option available for PostgreSQL
