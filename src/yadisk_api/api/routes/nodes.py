@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from fastapi import APIRouter, Depends
 
-from ..services.items_service import ItemsService
+from ...services.items_service import ItemsService
 
 router = APIRouter(prefix="/nodes")
 

@@ -1,8 +1,8 @@
 from datetime import datetime
 from fastapi import APIRouter, Depends
 
-from ..api.schema import SystemItemHistoryResponse
-from ..services.items_service import ItemsService
+from ...api.schema import SystemItemHistoryResponse
+from ...services.items_service import ItemsService
 
 router = APIRouter(prefix="/updates")
 
