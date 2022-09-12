@@ -49,8 +49,34 @@ class ApiTypesFactory:
 
     @classmethod
     def history_response(
-            cls, items_updates: list[(db.SystemItem, db.SystemItemUpdate)]) -> api.SystemItemHistoryResponse:
+            cls, items_updates: list[db.ItemWithUpdate]) -> api.SystemItemHistoryResponse:
         return api.SystemItemHistoryResponse(
             items=[cls.history_unit(item, update)
                    for item, update in items_updates]
         )
+
+    @classmethod
+    def system_item(cls, root_item_update: db.ItemWithUpdate,
+                    child_item_updates: list[db.ItemWithUpdate]) -> api.SystemItem:
+        # Define aux function
+        def _pair_to_item_without_children(item_pair: db.ItemWithUpdate) -> api.SystemItem:
+            h_unit = cls.history_unit(item_pair.item, item_pair.update)
+            return api.SystemItem(**h_unit.dict(), children=list())
+
+        # Cast db.ItemWithUpdate pairs to api SystemItem instances
+        root_item = _pair_to_item_without_children(root_item_update)
+        items = dict()
+        for pair in child_item_updates:
+            if not (item := items.get(pair.update.parent_id)):
+                items[pair.update.parent_id] = item = list()
+            item.append(_pair_to_item_without_children(pair))
+
+        # Use BFS to construct the item tree
+        not_placed_items = [root_item]
+        while not_placed_items:
+            current_item = not_placed_items.pop()
+            children = items.get(current_item.id, list())
+            not_placed_items.extend(children)
+            current_item.children.extend(children)
+
+        return root_item

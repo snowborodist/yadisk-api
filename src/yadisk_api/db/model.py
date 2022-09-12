@@ -1,4 +1,5 @@
 from enum import Enum as EnumType
+from collections import namedtuple
 from sqlalchemy import Column, ForeignKey, MetaData
 from sqlalchemy import String, Integer, Enum, DateTime
 from sqlalchemy.orm import declarative_base
@@ -41,3 +42,6 @@ class SystemItemUpdate(Base):
     date = Column(DateTime(timezone=False), nullable=False)
     url = Column(String, nullable=True)
     size = Column(Integer, nullable=True)
+
+
+ItemWithUpdate = namedtuple("ItemWithUpdate", "item update")
