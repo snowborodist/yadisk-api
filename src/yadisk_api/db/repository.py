@@ -45,22 +45,21 @@ class Repository:
         # Use WITH RECURSIVE option available for PostgreSQL
         stmt = """
         WITH RECURSIVE r AS (
-            SELECT si.id, item_updates.id as update_id, item_id, type, url, parent_id, size, date
+            (SELECT DISTINCT ON (si.id) si.id, item_updates.id as update_id, item_id, type, url, parent_id, size, date
                 FROM item_updates
                 JOIN system_items si on item_updates.item_id = si.id
                 WHERE item_id = :item_id
-            
+                ORDER BY si.id, item_updates.date DESC)
             UNION
-            
-            SELECT system_items.id, item_updates.id as update_id, item_updates.item_id, 
-                   system_items.type, item_updates.url, item_updates.parent_id, 
+
+            (SELECT DISTINCT ON (system_items.id) system_items.id, item_updates.id as update_id, item_updates.item_id,
+                   system_items.type, item_updates.url, item_updates.parent_id,
                    item_updates.size, item_updates.date
                 FROM item_updates
                 JOIN system_items ON item_updates.item_id = system_items.id
-                JOIN r
-                    ON item_updates.parent_id = r.id
+                JOIN r ON item_updates.parent_id = r.id
+                ORDER BY system_items.id, item_updates.date DESC)
         )
-        
         SELECT * FROM r;
         """
         return [_row_to_item_and_update(row) for row in
