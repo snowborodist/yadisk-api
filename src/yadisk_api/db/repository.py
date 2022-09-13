@@ -20,14 +20,19 @@ class Repository:
         for _ in results:
             raise ValueError("Imported items contain parent links to items of type 'FILE'")
 
-    async def upsert_items(self, items: list[db.SystemItem]):
-        values = [{"id": item.id, "type": item.type} for item in items]
-        # Use ON CONFLICT option available for PostgreSQL
-        stmt = pg_insert(db.SystemItem).values(values).on_conflict_do_nothing()
-        _ = await self.session.execute(stmt)
+    # async def upsert_items(self, items: list[db.SystemItem]):
+    #     values = [{"id": item.id, "type": item.type} for item in items]
+    #     # Use ON CONFLICT option available for PostgreSQL
+    #     stmt = pg_insert(db.SystemItem).values(values).on_conflict_do_nothing()
+    #     _ = await self.session.execute(stmt)
+    #
+    # async def insert_item_updates(self, item_updates: list[db.SystemItemUpdate]):
+    #     self.session.add_all(item_updates)
 
-    async def insert_item_updates(self, item_updates: list[db.SystemItemUpdate]):
-        self.session.add_all(item_updates)
+    async def insert_new_items(self, items: list[db.SystemItem]):
+        pass
+
+    async def update_existing_items
 
     async def get_item_info(self, system_item_id: str) -> list[db.ItemWithUpdate]:
         def _row_to_item_and_update(result_row) -> db.ItemWithUpdate:
