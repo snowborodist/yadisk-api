@@ -1,5 +1,5 @@
 from enum import Enum as EnumType
-from sqlalchemy import Column, MetaData, ForeignKeyConstraint, ForeignKey
+from sqlalchemy import Column, MetaData, ForeignKeyConstraint
 from sqlalchemy import String, Integer, Enum, DateTime
 from sqlalchemy.orm import declarative_base
 
@@ -61,6 +61,5 @@ class SystemItem(Base):
 class SystemItemTypeMatch(Base):
     __tablename__ = "system_item_type_registry"
 
-    id = Column(Integer, primary_key=True)
-    system_item_id = Column(String, nullable=False)
+    system_item_id = Column(String, primary_key=True)
     system_item_type = Column(Enum(SystemItemType), nullable=False)

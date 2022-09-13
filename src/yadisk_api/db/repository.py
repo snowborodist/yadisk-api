@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import delete, insert, and_
+from sqlalchemy import delete, and_, update
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -11,11 +11,6 @@ class Repository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def validate_item_type(self, item: db.SystemItem):
-        await self.session.execute(
-            pg_insert(db.SystemItemTypeMatch).values(item.id, item.type).on_conflict_do_nothing()
-        )
-
     async def validate_parent_ids(self, parent_ids: list[str]):
         # noinspection PyUnresolvedReferences
         results = await self.session.execute(
@@ -26,26 +21,35 @@ class Repository:
             raise ValueError("Imported items contain parent links to items of type 'FILE'")
 
     async def insert_items(self, items: list[db.SystemItem]):
-        for item_pair in items:
-            await self._insert_item(item_pair)
+        await self._validate_item_types(items)
+        await self._insert_items(items)
+        await self._insert_items_links(items)
 
-    async def _insert_item(self, item: db.SystemItem):
-        await self.session.execute(insert(item))
-        await self._add_loop_link(item.id, item.date)
-        if item.parent_id:
-            await self._link_child(item.parent_id, item.id, item.date)
+    async def _validate_item_types(self, items: list[db.SystemItem]):
+        rows = [dict(system_item_id=item.id, system_item_type=item.type) for item in items]
+        stmt = pg_insert(db.SystemItemTypeMatch).values(rows)
+        stmt = stmt.on_conflict_do_update(index_elements=[db.SystemItemTypeMatch.system_item_id],
+                                          set_=dict(system_item_type=stmt.excluded.system_item_type))
+        await self.session.execute(stmt)
 
-    async def _add_loop_link(self, item_id: str, date: datetime):
-        await self.session.execute(insert(db.SystemItemLink).values(item_id, item_id, date, 0))
+    async def _insert_items(self, items: list[db.SystemItem]):
+        self.session.add_all(items)
 
-    async def _link_child(self, parent_id: str, child_id: str, date: datetime):
+    async def _insert_items_links(self, items: list[db.SystemItem]):
+        for item in items:
+            loop_link = db.SystemItemLink(parent_id=item.id, child_id=item.id, date=item.date, depth=0)
+            self.session.add(loop_link)
+            if parent_id := item.parent_id:
+                await self._link_children(parent_id, item.id, item.date)
+
+    async def _link_children(self, parent_id: str, child_id: str, date: datetime):
         stmt = """
         INSERT INTO system_item_links(parent_id, child_id, date, depth)
-            SELECT p.parent, c.child, :date, p.depth + c.depth + 1
+            SELECT p.parent_id, c.child_id, :date, p.depth + c.depth + 1
             FROM system_item_links p, system_item_links c
             WHERE p.child_id = :parent_id AND c.parent_id = :child_id;
         """
-        await self.session.execute(stmt, date=date, parent_id=parent_id, child_id=child_id)
+        await self.session.execute(stmt, dict(date=date, parent_id=parent_id, child_id=child_id))
 
     async def get_item_adjacency_list(
             self, system_item_id: str, date: datetime | None = None) -> list[db.SystemItem]:

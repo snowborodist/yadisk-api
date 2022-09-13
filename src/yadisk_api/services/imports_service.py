@@ -8,6 +8,7 @@ class ImportsService(BaseService):
     async def emplace_imports(self, imports: SystemItemImportRequest):
         async with self.session.begin():
             repo = Repository(self.session)
-            await repo.validate_parent_ids(imports.parent_ids)
+            if parent_ids := imports.parent_ids:
+                await repo.validate_parent_ids(parent_ids)
             items = DbTypesFactory.system_items(imports)
             await repo.insert_items(items)
