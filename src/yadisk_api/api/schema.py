@@ -1,17 +1,19 @@
 from __future__ import annotations
 from datetime import datetime
-from pydantic import BaseModel, validator, conint
+from pydantic import BaseModel, validator, conint, constr
 
 from ..db.model import SystemItemType
 
 
-class SystemItemImport(BaseModel):
+class SystemItemBase(BaseModel):
     id: str
     type: SystemItemType
-    url: str | None
+    url: constr(max_length=255) | None
     parentId: str | None
     size: conint(ge=0) | None
 
+
+class SystemItemImport(SystemItemBase):
     @validator("url", always=True)
     def validate_url(cls, url: str | None, values):
         _type = values["type"]
@@ -59,7 +61,7 @@ class SystemItemImportRequest(BaseModel):
         validate_assignment = True
 
 
-class SystemItemHistoryUnit(SystemItemImport):
+class SystemItemHistoryUnit(SystemItemBase):
     date: datetime
 
 
@@ -71,7 +73,7 @@ class SystemItemHistoryResponse(BaseModel):
 
 
 class SystemItem(SystemItemHistoryUnit):
-    children: list[SystemItem] | None
+    children: list[SystemItem]
 
     class Config:
         orm_mode = True
