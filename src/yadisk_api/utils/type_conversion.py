@@ -6,70 +6,57 @@ from ..db import model as db
 
 class DbTypesFactory:
     @staticmethod
-    def system_item(item_import: api.SystemItemImport, date: datetime) \
-            -> (db.SystemItem, db.SystemItemUpdate):
-        item = db.SystemItem(
+    def system_item(item_import: api.SystemItemImport, date: datetime) -> db.SystemItem:
+        return db.SystemItem(
             id=item_import.id,
-            type=item_import.type
-        )
-        update = db.SystemItemUpdate(
-            item_id=item_import.id,
             parent_id=item_import.parentId,
             date=date.replace(tzinfo=None),
+            type=item_import.type,
             url=item_import.url,
             size=item_import.size
         )
-        return item, update
 
     @classmethod
-    def system_items(cls, import_request: api.SystemItemImportRequest) \
-            -> (list[db.SystemItem], list[db.SystemItemUpdate]):
-        items = []
-        updates = []
-        for item_import in import_request.items:
-            item, update = cls.system_item(
-                item_import,
-                import_request.updateDate)
-            items.append(item)
-            updates.append(update)
-        return items, updates
+    def system_items(cls, import_request: api.SystemItemImportRequest) -> list[db.SystemItem]:
+        return [cls.system_item(item_import, import_request.updateDate)
+                for item_import in import_request.items]
 
 
 class ApiTypesFactory:
     @staticmethod
-    def history_unit(item: db.SystemItem, update: db.SystemItemUpdate) -> api.SystemItemHistoryUnit:
+    def history_unit(item: db.SystemItem) -> api.SystemItemHistoryUnit:
         return api.SystemItemHistoryUnit(
             id=item.id,
             type=item.type,
-            url=update.url,
-            parentId=update.parent_id,
-            size=update.size,
-            date=update.date
+            url=item.url,
+            parentId=item.parent_id,
+            size=item.size,
+            date=item.date
         )
 
     @classmethod
     def history_response(
-            cls, items_updates: list[db.ItemWithUpdate]) -> api.SystemItemHistoryResponse:
+            cls, items_updates: list[db.SystemItem]) -> api.SystemItemHistoryResponse:
         return api.SystemItemHistoryResponse(
-            items=[cls.history_unit(item, update)
+            items=[cls.history_unit(item)
                    for item, update in items_updates]
         )
 
     @classmethod
-    def system_item(cls, root_item_update: db.ItemWithUpdate,
-                    child_item_updates: list[db.ItemWithUpdate]) -> api.SystemItem:
-        # Define aux function
-        def _pair_to_item_without_children(item_pair: db.ItemWithUpdate) -> api.SystemItem:
-            h_unit = cls.history_unit(item_pair.item, item_pair.update)
+    def system_item(cls, root_item: db.SystemItem,
+                    child_items: list[db.SystemItem]) -> api.SystemItem:
+        # Aux type conversion function
+        def _to_item_without_children(system_item: db.SystemItem) -> api.SystemItem:
+            h_unit = cls.history_unit(system_item)
             return api.SystemItem(**h_unit.dict(), children=list())
 
         # Cast db.ItemWithUpdate pairs to api SystemItem instances
-        root_item = _pair_to_item_without_children(root_item_update)
+        root_item = _to_item_without_children(root_item)
         items = dict()
-        for pair in child_item_updates:
-            if not (item := items.get(pair.update.parent_id)):
-                items[pair.update.parent_id] = item = list()
-            item.append(_pair_to_item_without_children(pair))
+        for child_item in child_items:
+            if not (item := items.get(child_item.update.parent_id)):
+                items[child_item.parent_id] = item = list()
+            item.append(_to_item_without_children(child_item))
 
         # Use BFS to construct the item tree
         not_placed_items = [root_item]

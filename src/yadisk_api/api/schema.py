@@ -78,6 +78,10 @@ class SystemItem(SystemItemHistoryUnit):
     class Config:
         orm_mode = True
 
+    @property
+    def history_unit(self) -> SystemItemHistoryUnit:
+        return super()
+
 
 class Error(BaseModel):
     code: int

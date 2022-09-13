@@ -11,8 +11,8 @@ class ItemsService(BaseService):
     async def get_item_info(self, system_item_id: str) -> SystemItem | None:
         async with self.session.begin():
             repo = Repository(self.session)
-            root_pair, *other_pairs = await repo.get_item_info(system_item_id)
-            return ApiTypesFactory.system_item(root_pair, other_pairs)
+            root_db_item, *child_db_items = await repo.get_item_adjacency_list(system_item_id)
+            return ApiTypesFactory.system_item(root_db_item, child_db_items)
 
     async def delete_item(self, system_item_id: str):
         async with self.session.begin():
@@ -31,5 +31,7 @@ class ItemsService(BaseService):
             date_start: datetime, date_end: datetime) -> SystemItemHistoryResponse:
         async with self.session.begin():
             repo = Repository(self.session)
-            return ApiTypesFactory.history_response(
-                await repo.get_item_history(system_item_id, date_start, date_end))
+            history_adj_lists = await repo.get_item_history(system_item_id, date_start, date_end)
+            history_units = [ApiTypesFactory.system_item(parent, children).history_unit
+                             for parent, *children in history_adj_lists]
+            return SystemItemHistoryResponse(items=history_units)

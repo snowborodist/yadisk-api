@@ -9,6 +9,5 @@ class ImportsService(BaseService):
         async with self.session.begin():
             repo = Repository(self.session)
             await repo.validate_parent_ids(imports.parent_ids)
-            items, updates = DbTypesFactory.system_items(imports)
-            await repo.upsert_items(items)
-            await repo.insert_item_updates(updates)
+            items = DbTypesFactory.system_items(imports)
+            await repo.insert_items(items)
