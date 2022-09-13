@@ -11,6 +11,14 @@ router = APIRouter(prefix="/node")
 @router.get("/{item_id}/history")
 async def get_item_history(
         item_id: str,
-        dateStart: datetime, dateEnd: datetime,
+        dateStart: datetime | None = None,
+        dateEnd: datetime | None = None,
         service: ItemsService = Depends()) -> SystemItemHistoryResponse | None:
-    return await service.get_item_history(item_id, dateStart, dateEnd)
+    if not dateStart and not dateEnd:
+        return await service.get_item_history(item_id)
+    if dateStart and dateEnd:
+        return await service.get_item_history(
+            system_item_id=item_id,
+            date_start=dateStart.replace(tzinfo=None),
+            date_end=dateEnd.replace(tzinfo=None))
+    raise ValueError("dateStart and dateEnd:  none or both of the parameters must be present")

@@ -28,7 +28,8 @@ class ItemsService(BaseService):
 
     async def get_item_history(
             self, system_item_id: str,
-            date_start: datetime, date_end: datetime) -> SystemItemHistoryResponse:
+            date_start: datetime| None = None,
+            date_end: datetime | None = None) -> SystemItemHistoryResponse:
         async with self.session.begin():
             repo = Repository(self.session)
             history_adj_lists = await repo.get_item_history(system_item_id, date_start, date_end)

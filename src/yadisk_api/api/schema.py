@@ -80,7 +80,7 @@ class SystemItem(SystemItemHistoryUnit):
 
     @property
     def history_unit(self) -> SystemItemHistoryUnit:
-        return super()
+        return SystemItemHistoryUnit.parse_obj(self)
 
 
 class Error(BaseModel):

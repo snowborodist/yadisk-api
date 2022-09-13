@@ -11,4 +11,4 @@ router = APIRouter(prefix="/updates")
 async def get_item_updates(
         date: datetime,
         service: ItemsService = Depends()) -> SystemItemHistoryResponse:
-    return await service.get_file_updates(date)
+    return await service.get_file_updates(date.replace(tzinfo=None))

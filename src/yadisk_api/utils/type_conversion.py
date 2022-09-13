@@ -36,11 +36,8 @@ class ApiTypesFactory:
 
     @classmethod
     def history_response(
-            cls, items_updates: list[db.SystemItem]) -> api.SystemItemHistoryResponse:
-        return api.SystemItemHistoryResponse(
-            items=[cls.history_unit(item)
-                   for item, update in items_updates]
-        )
+            cls, items: list[db.SystemItem]) -> api.SystemItemHistoryResponse:
+        return api.SystemItemHistoryResponse(items=[cls.history_unit(item) for item in items])
 
     @classmethod
     def system_item(cls, root_item: db.SystemItem,
@@ -54,7 +51,7 @@ class ApiTypesFactory:
         root_item = _to_item_without_children(root_item)
         items = dict()
         for child_item in child_items:
-            if not (item := items.get(child_item.update.parent_id)):
+            if not (item := items.get(child_item.parent_id)):
                 items[child_item.parent_id] = item = list()
             item.append(_to_item_without_children(child_item))
 

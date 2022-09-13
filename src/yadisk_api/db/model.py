@@ -1,5 +1,5 @@
 from enum import Enum as EnumType
-from sqlalchemy import Column, MetaData, ForeignKeyConstraint
+from sqlalchemy import Column, MetaData, ForeignKey
 from sqlalchemy import String, Integer, Enum, DateTime
 from sqlalchemy.orm import declarative_base
 
@@ -31,27 +31,14 @@ class SystemItemLink(Base):
     parent_id = Column(String, primary_key=True)
     child_id = Column(String, primary_key=True)
     date = Column(DateTime(timezone=False), primary_key=True)
-    depth = Column(Integer, nullable=False, server_default="1")
-
-    __table_args__ = (
-        ForeignKeyConstraint(
-            ('parent_id', 'date'),
-            ('system_items.id', 'system_items.date'),
-            ondelete="CASCADE"
-        ),
-        ForeignKeyConstraint(
-            ('child_id', 'date'),
-            ('system_items.id', 'system_items.date'),
-            ondelete="CASCADE"
-        )
-    )
+    depth = Column(Integer, nullable=False)
 
 
 class SystemItem(Base):
     __tablename__ = "system_items"
 
     id = Column(String, primary_key=True)
-    parent_id = Column(String, nullable=True)
+    parent_id = Column(String, ForeignKey("system_item_type_registry.system_item_id"), nullable=True)
     date = Column(DateTime(timezone=False), primary_key=True)
     type = Column(Enum(SystemItemType), nullable=False)
     url = Column(String, nullable=True)
