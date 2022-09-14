@@ -1,15 +1,15 @@
 """initial migration
 
-Revision ID: 280c8578c10c
+Revision ID: 42dd41bdd7e4
 Revises: 
-Create Date: 2022-09-13 17:06:45.303005
+Create Date: 2022-09-14 10:56:48.079224
 
 """
 from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision = '280c8578c10c'
+revision = '42dd41bdd7e4'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -52,7 +52,7 @@ END $$;
 
 CREATE TRIGGER type_update_trigger BEFORE UPDATE ON system_items FOR EACH ROW
       EXECUTE PROCEDURE check_type_change();
-    """)
+        """)
     # ### end Alembic commands ###
 
 
