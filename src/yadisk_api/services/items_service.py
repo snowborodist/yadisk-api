@@ -1,3 +1,4 @@
+from asyncio import gather
 from datetime import datetime, timedelta
 
 from ..api.schema import SystemItem, SystemItemHistoryResponse
@@ -11,9 +12,10 @@ class ItemsService(BaseService):
     async def get_item_info(self, system_item_id: str) -> SystemItem:
         async with self.session.begin():
             repo = Repository(self.session)
-            root_db_item, *child_db_items = await repo.get_item_adjacency_list(system_item_id)
-            if not root_db_item:
+            items = await repo.get_item_adjacency_list(system_item_id)
+            if not items:
                 raise ItemNotFoundError
+            root_db_item, *child_db_items = items
             return ApiTypesFactory.system_item(root_db_item, child_db_items)
 
     async def delete_item(self, system_item_id: str):
@@ -35,7 +37,17 @@ class ItemsService(BaseService):
         async with self.session.begin():
             repo = Repository(self.session)
             await repo.validate_item_exists(system_item_id)
-            history_adj_lists = await repo.get_item_history(system_item_id, date_start, date_end)
+            # Get date points, when the item's subtree was changed
+            dates = await repo.get_history_points_for_item(system_item_id, date_start, date_end)
+            # For each date get an adjacency list of nodes
+            # TODO: Should we update dates?
+            history_adj_lists = list(
+                await gather(
+                    *[repo.get_item_adjacency_list(
+                        system_item_id, date
+                    ) for date, *_ in dates]
+                )
+            )
             history_units = [ApiTypesFactory.system_item(parent, children).history_unit
                              for parent, *children in history_adj_lists]
             return SystemItemHistoryResponse(items=history_units)

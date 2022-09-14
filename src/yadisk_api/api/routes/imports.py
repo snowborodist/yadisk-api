@@ -11,4 +11,4 @@ async def post_imports(
         imports: SystemItemImportRequest,
         service: ImportsService = Depends()):
     await service.emplace_imports(imports)
-    return ""
+    return

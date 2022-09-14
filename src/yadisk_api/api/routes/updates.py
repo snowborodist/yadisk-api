@@ -7,7 +7,7 @@ from ...services.items_service import ItemsService
 router = APIRouter(prefix="/updates")
 
 
-@router.get("")
+@router.get("", response_model=SystemItemHistoryResponse)
 async def get_item_updates(
         date: datetime,
         service: ItemsService = Depends()) -> SystemItemHistoryResponse:

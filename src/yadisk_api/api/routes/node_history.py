@@ -1,5 +1,5 @@
 from datetime import datetime
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 
 from ...services.items_service import ItemsService
 from ...api.schema import SystemItemHistoryResponse
@@ -9,7 +9,7 @@ router = APIRouter(prefix="/node")
 
 
 # noinspection PyPep8Naming
-@router.get("/{item_id}/history")
+@router.get("/{item_id}/history", response_model=SystemItemHistoryResponse)
 async def get_item_history(
         item_id: str,
         dateStart: datetime | None = None,

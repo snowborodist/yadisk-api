@@ -4,6 +4,12 @@ from pydantic import BaseModel, validator, conint, constr
 
 from ..db.model import SystemItemType
 
+_STRING_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+
+
+def _encode_datetime(dt: datetime) -> str:
+    return dt.strftime(_STRING_FORMAT)
+
 
 class SystemItemBase(BaseModel):
     id: str
@@ -59,10 +65,18 @@ class SystemItemImportRequest(BaseModel):
 
     class Config:
         validate_assignment = True
+        json_encoders = {
+            datetime: _encode_datetime
+        }
 
 
 class SystemItemHistoryUnit(SystemItemBase):
     date: datetime
+
+    class Config:
+        json_encoders = {
+            datetime: _encode_datetime
+        }
 
 
 class SystemItemHistoryResponse(BaseModel):

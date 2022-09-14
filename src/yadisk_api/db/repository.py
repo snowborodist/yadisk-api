@@ -1,4 +1,5 @@
 from datetime import datetime
+from asyncio import gather
 from sqlalchemy import delete, and_, or_
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -65,24 +66,28 @@ class Repository:
         await self.session.execute(stmt, dict(date=date, parent_id=parent_id, child_id=child_id))
 
     async def get_item_adjacency_list(
-            self, system_item_id: str, date: datetime | None = None) -> list[db.SystemItem]:
+            self, system_item_id: str,
+            due_date: datetime | None = None) -> list[db.SystemItem]:
         """
         Get an adjacency list for a SystemItem with the given id.
+        Parameters due_date can be used to determine an upper bound of a datetime interval to select.
         @param system_item_id: item_id of the adjacency list's root item.
-        @param date: datetime point for the list selection.
-        @return a list of named tuples of type db.ItemWithParentId (adjacency list).
+        @param due_date: Non-inclusive end point if datetime interval to select.
+        @return List of SystemItem objects (adjacency list).
         The first item in the list is the root item.
         """
+        # TODO: Filter out deleted elements
         stmt = select(db.SystemItem) \
             .join(db.SystemItemLink,
                   db.SystemItem.id == db.SystemItemLink.child_id) \
             .distinct(db.SystemItem.id)
-        if date:
+        if due_date:
+            # noinspection PyUnresolvedReferences
             stmt = stmt.where(and_(db.SystemItemLink.parent_id == system_item_id,
-                                   db.SystemItem.date == date))
+                                   db.SystemItem.date <= due_date))
         else:
             stmt = stmt.where(db.SystemItemLink.parent_id == system_item_id)
-        stmt = stmt.order_by(db.SystemItem.id, db.SystemItem.date.desc())
+        stmt = stmt.order_by(db.SystemItem.id, db.SystemItem.date.desc(), db.SystemItemLink.depth)
 
         rows = await self.session.execute(stmt)
         return [row for row, *_ in rows]
@@ -121,22 +126,29 @@ class Repository:
         rows = await self.session.execute(stmt)
         return [row for row, *_ in rows]
 
-    async def get_item_history(
+    async def get_history_points_for_item(
             self, system_item_id: str,
             date_start: datetime | None = None,
-            date_end: datetime | None = None) -> list[list[db.SystemItem]]:
-        # Get date points, when the item's subtree was changed
-        stmt = select(db.SystemItemLink.date)
-        if date_start and date_end:
-            # noinspection PyUnresolvedReferences
-            stmt = stmt.where(and_(db.SystemItemLink.parent_id == system_item_id,
-                                   and_(db.SystemItemLink.date >= date_start,
-                                        db.SystemItemLink.date < date_end)))
-        else:
-            stmt = stmt.where(db.SystemItemLink.parent_id == system_item_id)
-        dates = list(await self.session.execute(stmt))
-        # For each date get an adjacency list of nodes
-        result = []
-        for date, *_ in dates:
-            result.append(await self.get_item_adjacency_list(system_item_id, date))
-        return result
+            date_end: datetime | None = None) -> list[datetime]:
+        where_clauses = [db.SystemItemLink.parent_id == system_item_id, ]
+        if date_start:
+            where_clauses.append(db.SystemItemLink.date >= date_start)
+        if date_end:
+            where_clauses.append(db.SystemItemLink.date < date_end)
+        stmt = select(db.SystemItemLink.date).distinct().where(and_(*where_clauses))
+        return list(await self.session.execute(stmt))
+
+    # async def get_item_history(
+    #         self, system_item_id: str,
+    #         date_start: datetime | None = None,
+    #         date_end: datetime | None = None) -> list[list[db.SystemItem]]:
+    #     # Get date points, when the item's subtree was changed
+    #     dates = await self.get_history_points_for_item(system_item_id, date_start, date_end)
+    #     # For each date get an adjacency list of nodes
+    #     return list(
+    #         await gather(
+    #             *[self.get_item_adjacency_list(
+    #                 system_item_id, date
+    #             ) for date, *_ in dates]
+    #         )
+    #     )
