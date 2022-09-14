@@ -1,6 +1,6 @@
 from enum import Enum as EnumType
 from sqlalchemy import Column, MetaData, ForeignKey
-from sqlalchemy import String, Integer, Enum, DateTime
+from sqlalchemy import String, Integer, Enum, DateTime, Boolean
 from sqlalchemy.orm import declarative_base
 
 
@@ -43,6 +43,7 @@ class SystemItem(Base):
     type = Column(Enum(SystemItemType), nullable=False)
     url = Column(String, nullable=True)
     size = Column(Integer, nullable=False)
+    deleted = Column(Boolean, nullable=False, default=False)
 
 
 class SystemItemTypeMatch(Base):

@@ -21,6 +21,9 @@ class ItemsService(BaseService):
     async def delete_item(self, system_item_id: str, date: datetime):
         async with self.session.begin():
             repo = Repository(self.session)
+            # adj_list = repo.get_item_adjacency_list(system_item_id)
+            # for item in adj_list:
+            #
             await repo.delete(system_item_id, date)
 
     async def get_file_updates(self, date: datetime) -> SystemItemHistoryResponse:
