@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends
 
 from ...services.items_service import ItemsService
 from ...api.schema import SystemItemHistoryResponse
+from ...utils.exception_handling import InvalidDataError
 
 router = APIRouter(prefix="/node")
 
@@ -13,12 +14,9 @@ async def get_item_history(
         item_id: str,
         dateStart: datetime | None = None,
         dateEnd: datetime | None = None,
-        service: ItemsService = Depends()) -> SystemItemHistoryResponse | None:
+        service: ItemsService = Depends()) -> SystemItemHistoryResponse:
     if not dateStart and not dateEnd:
         return await service.get_item_history(item_id)
     if dateStart and dateEnd:
-        return await service.get_item_history(
-            system_item_id=item_id,
-            date_start=dateStart.replace(tzinfo=None),
-            date_end=dateEnd.replace(tzinfo=None))
-    raise ValueError("dateStart and dateEnd:  none or both of the parameters must be present")
+        return await service.get_item_history(item_id, dateStart, dateEnd)
+    raise InvalidDataError("dateStart and dateEnd: none or both of the parameters must be present")

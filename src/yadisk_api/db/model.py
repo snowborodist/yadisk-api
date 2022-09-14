@@ -30,7 +30,7 @@ class SystemItemLink(Base):
 
     parent_id = Column(String, primary_key=True)
     child_id = Column(String, primary_key=True)
-    date = Column(DateTime(timezone=False), primary_key=True)
+    date = Column(DateTime, primary_key=True)
     depth = Column(Integer, nullable=False)
 
 
@@ -39,7 +39,7 @@ class SystemItem(Base):
 
     id = Column(String, primary_key=True)
     parent_id = Column(String, ForeignKey("system_item_type_registry.system_item_id"), nullable=True)
-    date = Column(DateTime(timezone=False), primary_key=True)
+    date = Column(DateTime, primary_key=True)
     type = Column(Enum(SystemItemType), nullable=False)
     url = Column(String, nullable=True)
     size = Column(Integer, nullable=True)
@@ -50,3 +50,6 @@ class SystemItemTypeMatch(Base):
 
     system_item_id = Column(String, primary_key=True)
     system_item_type = Column(Enum(SystemItemType), nullable=False)
+
+
+# TODO: Remove depth, add indexes (parent, date, child), (child, parent, date)

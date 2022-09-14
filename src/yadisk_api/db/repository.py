@@ -5,11 +5,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from . import model as db
+from ..utils.exception_handling import ItemNotFoundError, InvalidDataError
 
 
 class Repository:
     def __init__(self, session: AsyncSession):
         self.session = session
+
+    async def validate_item_exists(self, system_item_id: str):
+        result = await self.session.execute(
+            select(db.SystemItemTypeMatch.system_item_id).filter_by(system_item_id=system_item_id))
+        if not result:
+            raise ItemNotFoundError
 
     async def validate_parent_ids(self, parent_ids: list[str]):
         # noinspection PyUnresolvedReferences
@@ -18,7 +25,7 @@ class Repository:
                                          db.SystemItem.id.in_(parent_ids))
         )
         for _ in rows:
-            raise ValueError("Imported items contain parent links to items of type 'FILE'")
+            raise InvalidDataError("Imported items contain parent links to items of type 'FILE'")
 
     async def insert_items(self, items: list[db.SystemItem]):
         await self._validate_item_types(items)
@@ -83,6 +90,8 @@ class Repository:
     async def delete(self, system_item_id: str):
         # Get ids to delete
         item_ids_to_delete = await self._get_descendants_ids(system_item_id)
+        if not item_ids_to_delete:
+            raise ItemNotFoundError
         # Delete all links
         stmt = delete(db.SystemItemLink).where(
             or_(db.SystemItemLink.parent_id.in_(item_ids_to_delete),

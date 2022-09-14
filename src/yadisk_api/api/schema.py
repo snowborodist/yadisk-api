@@ -18,18 +18,18 @@ class SystemItemImport(SystemItemBase):
     def validate_url(cls, url: str | None, values):
         _type = values["type"]
         if _type == SystemItemType.FOLDER and url:
-            raise ValueError("Item of type 'FOLDER' can't have url")
+            raise ValueError("Item of type 'FOLDER' can't have url.")
         if _type == SystemItemType.FILE and not url:
-            raise ValueError("Item of type 'FILE' should have url")
+            raise ValueError("Item of type 'FILE' should have url.")
         return url
 
     @validator("size", always=True)
     def validate_size(cls, size: int | None, values):
         _type = values["type"]
         if _type == SystemItemType.FOLDER and size:
-            raise ValueError("Item of type 'FOLDER' can't have size")
+            raise ValueError("Item of type 'FOLDER' can't have size.")
         if _type == SystemItemType.FILE and not size:
-            raise ValueError("Item of type 'FILE' should have size")
+            raise ValueError("Item of type 'FILE' should have size.")
         return size
 
     class Config:
@@ -50,7 +50,7 @@ class SystemItemImportRequest(BaseModel):
             if item.parentId:
                 new_parent_rel_ids.add(item.parentId)
         if new_file_ids & new_parent_rel_ids:
-            raise ValueError("Items of type 'FILE' can't be parents")
+            raise ValueError("Items of type 'FILE' can't be parents.")
         return items
 
     @property
@@ -73,7 +73,7 @@ class SystemItemHistoryResponse(BaseModel):
 
 
 class SystemItem(SystemItemHistoryUnit):
-    children: list[SystemItem]
+    children: list[SystemItem] | None = None
 
     class Config:
         orm_mode = True
@@ -86,3 +86,11 @@ class SystemItem(SystemItemHistoryUnit):
 class Error(BaseModel):
     code: int
     message: str
+
+    @staticmethod
+    def validation_error() -> 'Error':
+        return Error(code=400, message="Validation Failed")
+
+    @staticmethod
+    def not_found_error() -> 'Error':
+        return Error(code=404, message="Item not found")

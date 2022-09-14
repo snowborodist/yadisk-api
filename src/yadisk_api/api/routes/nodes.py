@@ -1,4 +1,3 @@
-from http import HTTPStatus
 from fastapi import APIRouter, Depends
 
 from ...services.items_service import ItemsService
@@ -10,5 +9,4 @@ router = APIRouter(prefix="/nodes")
 async def get_system_item(
         item_id: str,
         service: ItemsService = Depends()):
-    node = await service.get_item_info(item_id)
-    return node if node else HTTPStatus.NOT_FOUND
+    return await service.get_item_info(item_id)

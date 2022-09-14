@@ -45,7 +45,7 @@ class ApiTypesFactory:
         # Aux type conversion function
         def _to_item_without_children(system_item: db.SystemItem) -> api.SystemItem:
             h_unit = cls.history_unit(system_item)
-            return api.SystemItem(**h_unit.dict(), children=list())
+            return api.SystemItem(**h_unit.dict())
 
         # Cast db.ItemWithUpdate pairs to api SystemItem instances
         root_item = _to_item_without_children(root_item)
@@ -59,8 +59,10 @@ class ApiTypesFactory:
         not_placed_items = [root_item]
         while not_placed_items:
             current_item = not_placed_items.pop()
+            if current_item.type == db.SystemItemType.FILE:
+                continue
             children = items.get(current_item.id, list())
             not_placed_items.extend(children)
-            current_item.children.extend(children)
+            current_item.children = children
 
         return root_item
