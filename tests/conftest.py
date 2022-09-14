@@ -1,27 +1,25 @@
-# import pytest
-# from uuid import uuid4
-# from yarl import URL
-# from fastapi.testclient import TestClient
-# from sqlalchemy.orm import sessionmaker
-# from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-#
-# from src.yadisk_api.app import app
-# from src.yadisk_api.settings import settings
-# from src.yadisk_api.db.model import metadata
-#
-#
-# @pytest.fixture
-# def db_engine():
-#     tmp_db_name = '.'.join([uuid4().hex, 'test'])
-#     tmp_db_url = str(URL(settings.database_url).with_path(tmp_db_name))
-#     engine = create_async_engine(tmp_db_url)
-#
-#     try:
-#         yield engine
-#     finally:
-#         engine.dispose()
-#
-#
+import pytest
+from uuid import uuid4
+from yarl import URL
+from sqlalchemy import create_engine
+from sqlalchemy_utils import create_database, drop_database
+
+
+from src.yadisk_api.settings import Settings
+
+settings = Settings(_env_file=".test.env", _env_file_encoding="utf-8")
+
+
+@pytest.fixture
+def database():
+    tmp_db_name = '.'.join([uuid4().hex, 'test'])
+    tmp_db_url = str(URL(settings.database_url).with_path(tmp_db_name))
+    create_database(tmp_db_url)
+    try:
+        yield tmp_db_url
+    finally:
+        drop_database(tmp_db_url)
+
 # @pytest.fixture
 # def migrated_db_engine(db_engine):
 #     async with db_engine.connect() as conn:

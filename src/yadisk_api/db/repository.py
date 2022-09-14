@@ -1,6 +1,5 @@
 from datetime import datetime
-from asyncio import gather
-from sqlalchemy import delete, and_, or_
+from sqlalchemy import and_
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -13,10 +12,19 @@ class Repository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def validate_item_exists(self, system_item_id: str):
-        result = await self.session.execute(
-            select(db.SystemItemTypeMatch.system_item_id).filter_by(system_item_id=system_item_id))
-        if not result:
+    async def validate_item_exists(self, system_item_id: str, due_date: datetime | None = None):
+        filters = [db.SystemItem.id == system_item_id, ]
+        if due_date:
+            filters.append(db.SystemItem.date <= due_date)
+        # noinspection PyUnresolvedReferences
+        stmt = select(db.SystemItem.deleted) \
+            .distinct(db.SystemItem.id).where(*filters) \
+            .order_by(db.SystemItem.id, db.SystemItem.date.desc())
+        rows = list(await self.session.execute(stmt))
+        if not rows:
+            raise ItemNotFoundError
+        deleted, *_ = rows[0]
+        if deleted:
             raise ItemNotFoundError
 
     async def validate_parent_ids(self, parent_ids: list[str]):
@@ -87,29 +95,11 @@ class Repository:
                                    db.SystemItem.date <= due_date))
         else:
             stmt = stmt.where(db.SystemItemLink.parent_id == system_item_id)
+        # noinspection PyUnresolvedReferences
         stmt = stmt.order_by(db.SystemItem.id, db.SystemItem.date.desc(), db.SystemItemLink.depth)
 
         rows = await self.session.execute(stmt)
         return [row for row, *_ in rows]
-
-    async def delete(self, system_item_id: str, deletion_time: datetime):
-        raise NotImplementedError
-        # # Get ids to delete
-        # item_ids_to_delete = await self._get_descendants_ids(system_item_id)
-        # if not item_ids_to_delete:
-        #     raise ItemNotFoundError
-        # # Delete all links
-        # stmt = delete(db.SystemItemLink).where(
-        #     or_(db.SystemItemLink.parent_id.in_(item_ids_to_delete),
-        #         db.SystemItemLink.child_id.in_(item_ids_to_delete)))
-        # await self.session.execute(stmt)
-        # # Delete type match guards
-        # stmt = delete(db.SystemItemTypeMatch) \
-        #     .where(db.SystemItemTypeMatch.system_item_id.in_(item_ids_to_delete))
-        # await self.session.execute(stmt)
-        # # Delete the item and all descendants
-        # stmt = delete(db.SystemItem).where(db.SystemItem.id.in_(item_ids_to_delete))
-        # await self.session.execute(stmt)
 
     async def _get_descendants_ids(self, system_item_id) -> list[str]:
         stmt = select(db.SystemItem.id).distinct() \
@@ -138,18 +128,3 @@ class Repository:
             where_clauses.append(db.SystemItemLink.date < date_end)
         stmt = select(db.SystemItemLink.date).distinct().where(and_(*where_clauses))
         return list(await self.session.execute(stmt))
-
-    # async def get_item_history(
-    #         self, system_item_id: str,
-    #         date_start: datetime | None = None,
-    #         date_end: datetime | None = None) -> list[list[db.SystemItem]]:
-    #     # Get date points, when the item's subtree was changed
-    #     dates = await self.get_history_points_for_item(system_item_id, date_start, date_end)
-    #     # For each date get an adjacency list of nodes
-    #     return list(
-    #         await gather(
-    #             *[self.get_item_adjacency_list(
-    #                 system_item_id, date
-    #             ) for date, *_ in dates]
-    #         )
-    #     )

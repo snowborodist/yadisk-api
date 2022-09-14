@@ -7,7 +7,4 @@ class Settings(BaseSettings):
     database_url: str
 
 
-settings = Settings(
-    _env_file=".dev.env",
-    _env_file_encoding="utf-8"
-)
+settings = Settings()

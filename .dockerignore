@@ -1,0 +1,4 @@
+tests
+docker-compose.yml
+requirements.tests.txt
+*.env

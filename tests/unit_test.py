@@ -1,14 +1,13 @@
 # encoding=utf8
 
 import json
-import re
 import subprocess
 import sys
 import urllib.error
 import urllib.parse
 import urllib.request
 
-API_BASEURL = "http://localhost:8080"
+API_BASEURL = "http://localhost:5002"
 
 ROOT_ID = "069cb8d7-bbdd-47d3-ad8f-82ef4c269df1"
 
@@ -265,40 +264,3 @@ def test_delete():
     assert status == 404, f"Expected HTTP status code 404, got {status}"
 
     print("Test delete passed.")
-
-
-def test_all():
-    test_import()
-    test_nodes()
-    test_updates()
-    test_history()
-    test_delete()
-
-
-def main():
-    global API_BASEURL
-    test_name = None
-
-    for arg in sys.argv[1:]:
-        if re.match(r"^https?://", arg):
-            API_BASEURL = arg
-        elif test_name is None:
-            test_name = arg
-
-    if API_BASEURL.endswith('/'):
-        API_BASEURL = API_BASEURL[:-1]
-
-    print(f"Testing API on {API_BASEURL}")
-
-    if test_name is None:
-        test_all()
-    else:
-        test_func = globals().get(f"test_{test_name}")
-        if not test_func:
-            print(f"Unknown test: {test_name}")
-            sys.exit(1)
-        test_func()
-
-
-if __name__ == "__main__":
-    main()

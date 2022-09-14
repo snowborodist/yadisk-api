@@ -50,16 +50,22 @@ class ApiTypesFactory:
         # Cast db.ItemWithUpdate pairs to api SystemItem instances
         root_item = _to_item_without_children(root_item)
         items = dict()
+        deletion_dates = []
         for child_item in child_items:
+            if child_item.deleted:
+                deletion_dates.append(child_item.date)
+                continue
             if not (item := items.get(child_item.parent_id)):
                 items[child_item.parent_id] = item = list()
             item.append(_to_item_without_children(child_item))
+        if deletion_dates:
+            deletion_dates.append(root_item.date)
+            root_item.date = max(deletion_dates)
 
         # Use BFS to construct the item tree
         not_placed_items = [root_item]
         while not_placed_items:
             current_item = not_placed_items.pop()
-
             if current_item.type == db.SystemItemType.FILE:
                 continue
             children = items.get(current_item.id, list())

@@ -8,8 +8,14 @@ services:
       - POSTGRES_PASSWORD=postgres
     volumes:
       - dbvolume:/var/lib/postgresql/data
+    restart: always
+
+  yadisk-api:
+    image: snowborodist/yadisk-api:1.0.0
+    environment:
+      - database_url=postgresql+asyncpg://postgres:postgres@postgres:5432/yadisk_db
     ports:
-      - "5432:5432"
+      - "80:5000"
     restart: always
 
 volumes:

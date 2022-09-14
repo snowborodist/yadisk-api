@@ -1,12 +1,10 @@
-from fastapi import FastAPI
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 
 from ..settings import settings
 
 _engine = create_async_engine(
-    settings.database_url,
-    echo=True,
+    settings.database_url
 )
 
 Session = sessionmaker(
