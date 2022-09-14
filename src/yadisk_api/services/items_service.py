@@ -18,10 +18,10 @@ class ItemsService(BaseService):
             root_db_item, *child_db_items = items
             return ApiTypesFactory.system_item(root_db_item, child_db_items)
 
-    async def delete_item(self, system_item_id: str):
+    async def delete_item(self, system_item_id: str, date: datetime):
         async with self.session.begin():
             repo = Repository(self.session)
-            await repo.delete(system_item_id)
+            await repo.delete(system_item_id, date)
 
     async def get_file_updates(self, date: datetime) -> SystemItemHistoryResponse:
         async with self.session.begin():

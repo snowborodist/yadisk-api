@@ -92,23 +92,24 @@ class Repository:
         rows = await self.session.execute(stmt)
         return [row for row, *_ in rows]
 
-    async def delete(self, system_item_id: str):
-        # Get ids to delete
-        item_ids_to_delete = await self._get_descendants_ids(system_item_id)
-        if not item_ids_to_delete:
-            raise ItemNotFoundError
-        # Delete all links
-        stmt = delete(db.SystemItemLink).where(
-            or_(db.SystemItemLink.parent_id.in_(item_ids_to_delete),
-                db.SystemItemLink.child_id.in_(item_ids_to_delete)))
-        await self.session.execute(stmt)
-        # Delete type match guards
-        stmt = delete(db.SystemItemTypeMatch) \
-            .where(db.SystemItemTypeMatch.system_item_id.in_(item_ids_to_delete))
-        await self.session.execute(stmt)
-        # Delete the item and all descendants
-        stmt = delete(db.SystemItem).where(db.SystemItem.id.in_(item_ids_to_delete))
-        await self.session.execute(stmt)
+    async def delete(self, system_item_id: str, deletion_time: datetime):
+        raise NotImplementedError
+        # # Get ids to delete
+        # item_ids_to_delete = await self._get_descendants_ids(system_item_id)
+        # if not item_ids_to_delete:
+        #     raise ItemNotFoundError
+        # # Delete all links
+        # stmt = delete(db.SystemItemLink).where(
+        #     or_(db.SystemItemLink.parent_id.in_(item_ids_to_delete),
+        #         db.SystemItemLink.child_id.in_(item_ids_to_delete)))
+        # await self.session.execute(stmt)
+        # # Delete type match guards
+        # stmt = delete(db.SystemItemTypeMatch) \
+        #     .where(db.SystemItemTypeMatch.system_item_id.in_(item_ids_to_delete))
+        # await self.session.execute(stmt)
+        # # Delete the item and all descendants
+        # stmt = delete(db.SystemItem).where(db.SystemItem.id.in_(item_ids_to_delete))
+        # await self.session.execute(stmt)
 
     async def _get_descendants_ids(self, system_item_id) -> list[str]:
         stmt = select(db.SystemItem.id).distinct() \

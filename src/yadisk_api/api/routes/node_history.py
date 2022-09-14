@@ -1,5 +1,5 @@
 from datetime import datetime
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends
 
 from ...services.items_service import ItemsService
 from ...api.schema import SystemItemHistoryResponse
@@ -18,5 +18,7 @@ async def get_item_history(
     if not dateStart and not dateEnd:
         return await service.get_item_history(item_id)
     if dateStart and dateEnd:
-        return await service.get_item_history(item_id, dateStart, dateEnd)
+        return await service.get_item_history(
+            item_id, dateStart.replace(tzinfo=None),
+            dateEnd.replace(tzinfo=None))
     raise InvalidDataError("dateStart and dateEnd: none or both of the parameters must be present")
