@@ -42,7 +42,7 @@ class SystemItem(Base):
     date = Column(DateTime, primary_key=True)
     type = Column(Enum(SystemItemType), nullable=False)
     url = Column(String, nullable=True)
-    size = Column(Integer, nullable=True)
+    size = Column(Integer, nullable=False)
 
 
 class SystemItemTypeMatch(Base):

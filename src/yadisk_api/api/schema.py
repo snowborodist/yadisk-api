@@ -74,6 +74,7 @@ class SystemItemHistoryUnit(SystemItemBase):
     date: datetime
 
     class Config:
+        validate_assignment = False
         json_encoders = {
             datetime: _encode_datetime
         }
@@ -83,6 +84,7 @@ class SystemItemHistoryResponse(BaseModel):
     items: list[SystemItemHistoryUnit]
 
     class Config:
+        validate_assignment = False
         orm_mode = True
 
 
@@ -90,6 +92,7 @@ class SystemItem(SystemItemHistoryUnit):
     children: list[SystemItem] | None = None
 
     class Config:
+        validate_assignment = False
         orm_mode = True
 
     @property

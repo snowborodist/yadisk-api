@@ -40,7 +40,6 @@ class ItemsService(BaseService):
             # Get date points, when the item's subtree was changed
             dates = await repo.get_history_points_for_item(system_item_id, date_start, date_end)
             # For each date get an adjacency list of nodes
-            # TODO: Should we update dates?
             history_adj_lists = list(
                 await gather(
                     *[repo.get_item_adjacency_list(
@@ -48,6 +47,7 @@ class ItemsService(BaseService):
                     ) for date, *_ in dates]
                 )
             )
+            # Assemble trees from the adjacency lists and get history unit fields
             history_units = [ApiTypesFactory.system_item(parent, children).history_unit
                              for parent, *children in history_adj_lists]
             return SystemItemHistoryResponse(items=history_units)

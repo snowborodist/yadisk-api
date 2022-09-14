@@ -13,7 +13,7 @@ class DbTypesFactory:
             date=date.replace(tzinfo=None),
             type=item_import.type,
             url=item_import.url,
-            size=item_import.size
+            size=item_import.size if item_import.size else 0
         )
 
     @classmethod
@@ -59,10 +59,26 @@ class ApiTypesFactory:
         not_placed_items = [root_item]
         while not_placed_items:
             current_item = not_placed_items.pop()
+
             if current_item.type == db.SystemItemType.FILE:
                 continue
             children = items.get(current_item.id, list())
             not_placed_items.extend(children)
             current_item.children = children
 
+        # Fill sizes and actual dates
+        _, _ = cls._fill_system_item_tree(root_item)
         return root_item
+
+    @classmethod
+    def _fill_system_item_tree(cls, root_item: api.SystemItem) -> (int, datetime):
+        dts = [root_item.date, ]
+        size = root_item.size
+        if root_item.children:
+            for child in root_item.children:
+                s, dt = cls._fill_system_item_tree(child)
+                dts.append(dt)
+                size += s
+            root_item.size = size
+            root_item.date = max(dts)
+        return root_item.size, root_item.date
