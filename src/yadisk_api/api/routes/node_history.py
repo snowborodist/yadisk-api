@@ -3,12 +3,15 @@ from fastapi import APIRouter, Depends
 
 from ...services.items_service import ItemsService
 from ...api.schema import SystemItemHistoryResponse
+from . import common_responses
 
 router = APIRouter(prefix="/node")
 
 
 # noinspection PyPep8Naming
-@router.get("/{item_id}/history", response_model=SystemItemHistoryResponse)
+@router.get("/{item_id}/history",
+            response_model=SystemItemHistoryResponse,
+            responses=common_responses)
 async def get_item_history(
         item_id: str,
         dateStart: datetime | None = None,
