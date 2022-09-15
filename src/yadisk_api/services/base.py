@@ -1,7 +1,7 @@
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..utils.db import get_session
+from src.yadisk_api.utils.db import get_session
 
 
 class BaseService:

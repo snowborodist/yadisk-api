@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
-from .api import router
-from .utils.exception_handling import setup_exception_handling
+from src.yadisk_api.api import router
+from src.yadisk_api.utils.exception_handling import setup_exception_handling
 
 app = FastAPI()
 app.include_router(router)

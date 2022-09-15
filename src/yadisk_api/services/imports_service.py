@@ -1,7 +1,7 @@
-from .base import BaseService
-from ..api.schema import SystemItemImportRequest
-from ..db.repository import Repository
-from ..utils.type_conversion import DbTypesFactory
+from src.yadisk_api.services.base import BaseService
+from src.yadisk_api.api.schema import SystemItemImportRequest
+from src.yadisk_api.db.repository import Repository
+from src.yadisk_api.utils.type_conversion import DbTypesFactory
 
 
 class ImportsService(BaseService):

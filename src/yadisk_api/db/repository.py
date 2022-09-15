@@ -1,11 +1,12 @@
+from asyncio import gather
 from datetime import datetime
 from sqlalchemy import and_
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
-from . import model as db
-from ..utils.exception_handling import ItemNotFoundError, InvalidDataError
+from src.yadisk_api.db import model as db
+from src.yadisk_api.utils.exception_handling import ItemNotFoundError, InvalidDataError
 
 
 class Repository:
@@ -74,9 +75,11 @@ class Repository:
 
     async def _insert_items_child_links(self, items: list[db.SystemItem]):
         # TODO: gather?
-        for item in items:
-            if parent_id := item.parent_id:
-                await self._link_children(parent_id, item.id, item.date)
+        # for item in items:
+        #     if parent_id := item.parent_id:
+        #         await self._link_children(parent_id, item.id, item.date)
+        await gather(*[self._link_children(item.parent_id, item.id, item.date)
+                      for item in items if item.parent_id])
 
     async def _link_children(self, parent_id: str, child_id: str, date: datetime):
         stmt = """

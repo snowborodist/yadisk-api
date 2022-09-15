@@ -1,4 +1,4 @@
-from ..schema import Error
+from src.yadisk_api.api.schema import Error
 
 bad_request_response = {400: {"model": Error}}
 not_found_response = {404: {"model": Error}}

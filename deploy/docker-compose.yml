@@ -16,6 +16,8 @@ services:
       - database_url=postgresql+asyncpg://postgres:postgres@postgres:5432/yadisk_db
     ports:
       - "80:5000"
+    depends_on:
+      - postgres
     restart: always
 
 volumes:

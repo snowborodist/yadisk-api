@@ -1,9 +1,9 @@
 from datetime import datetime
 from fastapi import APIRouter, Depends
 
-from ...api.schema import SystemItemHistoryResponse
-from ...services.items_service import ItemsService
-from . import bad_request_response
+from src.yadisk_api.api.schema import SystemItemHistoryResponse
+from src.yadisk_api.services.items_service import ItemsService
+from src.yadisk_api.api.routes import bad_request_response
 
 router = APIRouter(prefix="/updates")
 

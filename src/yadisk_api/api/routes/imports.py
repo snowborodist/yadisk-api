@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 
-from ...services.imports_service import ImportsService
-from ..schema import SystemItemImportRequest
-from . import bad_request_response
+from src.yadisk_api.services.imports_service import ImportsService
+from src.yadisk_api.api.schema import SystemItemImportRequest
+from src.yadisk_api.api.routes import bad_request_response
 
 router = APIRouter(prefix="/imports")
 

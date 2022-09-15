@@ -1,7 +1,7 @@
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 
-from ..settings import settings
+from src.yadisk_api.settings import settings
 
 _engine = create_async_engine(
     settings.database_url

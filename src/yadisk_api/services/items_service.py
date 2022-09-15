@@ -2,11 +2,10 @@ from asyncio import gather
 from datetime import datetime, timedelta
 from sqlalchemy.orm.session import make_transient
 
-from ..api import schema as api
-from ..services.base import BaseService
-from ..db.repository import Repository, ItemNotFoundError
-
-from ..utils.type_conversion import ApiTypesFactory
+from src.yadisk_api.api import schema as api
+from src.yadisk_api.services.base import BaseService
+from src.yadisk_api.db.repository import Repository
+from src.yadisk_api.utils.type_conversion import ApiTypesFactory
 
 
 class ItemsService(BaseService):

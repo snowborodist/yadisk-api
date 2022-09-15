@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from ..api import schema as api
-from ..db import model as db
+from src.yadisk_api.api import schema as api
+from src.yadisk_api.db import model as db
 
 
 class DbTypesFactory:

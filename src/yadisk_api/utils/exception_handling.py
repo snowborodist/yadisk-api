@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import SQLAlchemyError
 
-from ..api.schema import Error
+from src.yadisk_api.api.schema import Error
 
 
 class ItemNotFoundError(Exception):

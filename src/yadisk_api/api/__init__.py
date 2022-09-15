@@ -1,10 +1,10 @@
 from fastapi import APIRouter
 
-from .routes.imports import router as imports_router
-from .routes.nodes import router as nodes_router
-from .routes.delete import router as delete_router
-from .routes.updates import router as updates_router
-from .routes.node_history import router as history_router
+from src.yadisk_api.api.routes.imports import router as imports_router
+from src.yadisk_api.api.routes.nodes import router as nodes_router
+from src.yadisk_api.api.routes.delete import router as delete_router
+from src.yadisk_api.api.routes.updates import router as updates_router
+from src.yadisk_api.api.routes.node_history import router as history_router
 
 router = APIRouter()
 router.include_router(imports_router)

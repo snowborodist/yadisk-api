@@ -9,7 +9,7 @@ import urllib.request
 
 # import pytest
 
-API_BASEURL = "http://localhost:5002"
+API_BASEURL = "http://localhost:8000"
 
 ROOT_ID = "069cb8d7-bbdd-47d3-ad8f-82ef4c269df1"
 
@@ -274,3 +274,11 @@ def test_delete():
     assert status == 404, f"Expected HTTP status code 404, got {status}"
 
     print("Test delete passed.")
+
+
+if __name__ == "__main__":
+    test_import()
+    test_nodes()
+    test_updates()
+    test_history()
+    test_delete()

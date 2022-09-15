@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 
-from ...api.schema import SystemItem
-from ...services.items_service import ItemsService
-from . import common_responses
+from src.yadisk_api.api.schema import SystemItem
+from src.yadisk_api.services.items_service import ItemsService
+from src.yadisk_api.api.routes import common_responses
 
 router = APIRouter(prefix="/nodes")
 

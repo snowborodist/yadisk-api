@@ -2,7 +2,7 @@ from __future__ import annotations
 from datetime import datetime
 from pydantic import BaseModel, validator, conint, constr
 
-from ..db.model import SystemItemType
+from src.yadisk_api.db.model import SystemItemType
 
 _STRING_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
@@ -51,13 +51,17 @@ class SystemItemImportRequest(BaseModel):
     # noinspection PyMethodParameters
     @validator("items", always=True)
     def validate_parents(cls, items: list[SystemItemImport]):
+        new_ids = set()
         new_file_ids = set()
         new_parent_rel_ids = set()
         for item in items:
+            new_ids.add(item.id)
             if item.type == SystemItemType.FILE:
                 new_file_ids.add(item.id)
             if item.parentId:
                 new_parent_rel_ids.add(item.parentId)
+        if len(new_ids) < len(items):
+            raise ValueError("Items' ids must be cross-unique.")
         if new_file_ids & new_parent_rel_ids:
             raise ValueError("Items of type 'FILE' can't be parents.")
         return items
