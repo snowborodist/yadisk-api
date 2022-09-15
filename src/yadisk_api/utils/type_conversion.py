@@ -40,14 +40,21 @@ class ApiTypesFactory:
         return api.SystemItemHistoryResponse(items=[cls.history_unit(item) for item in items])
 
     @classmethod
-    def system_item(cls, root_item: db.SystemItem,
-                    child_items: list[db.SystemItem]) -> api.SystemItem:
-        # Aux type conversion function
+    def system_item_from_adj_list(cls, root_item: db.SystemItem,
+                                  child_items: list[db.SystemItem]) -> api.SystemItem:
+        """
+        Возвращает объект схемы api.SystemItem, построенный из элементов списка смежности dbSystemItem,
+        с восстановленным деревом потомков, актуализированными размерами и датами обновления элементов.
+        @param root_item: корневой элемент списка смежности.
+        @param child_items: дочерние элементы списка смежности.
+        @return: построенный объект схемы api.SystemItem.
+        """
+        # Вспомогательная функция
         def _to_item_without_children(system_item: db.SystemItem) -> api.SystemItem:
             h_unit = cls.history_unit(system_item)
             return api.SystemItem(**h_unit.dict())
 
-        # Cast db.ItemWithUpdate pairs to api SystemItem instances
+        # Предварительная конвертация типов db.SystemItem -> api.SystemItem
         root_item = _to_item_without_children(root_item)
         items = dict()
         deletion_dates = []
@@ -62,7 +69,7 @@ class ApiTypesFactory:
             deletion_dates.append(root_item.date)
             root_item.date = max(deletion_dates)
 
-        # Use BFS to construct the item tree
+        # Построение дерева потомков методом BFS.
         not_placed_items = [root_item]
         while not_placed_items:
             current_item = not_placed_items.pop()
@@ -72,7 +79,7 @@ class ApiTypesFactory:
             not_placed_items.extend(children)
             current_item.children = children
 
-        # Fill sizes and actual dates
+        # Рекурсивное заполнение дерева потомков актуальными размерами и датами изменений.
         _, _ = cls._fill_system_item_tree(root_item)
         return root_item
 

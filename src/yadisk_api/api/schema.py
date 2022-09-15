@@ -20,6 +20,7 @@ class SystemItemBase(BaseModel):
 
 
 class SystemItemImport(SystemItemBase):
+    # noinspection PyMethodParameters
     @validator("url", always=True)
     def validate_url(cls, url: str | None, values):
         _type = values["type"]
@@ -29,6 +30,7 @@ class SystemItemImport(SystemItemBase):
             raise ValueError("Item of type 'FILE' should have url.")
         return url
 
+    # noinspection PyMethodParameters
     @validator("size", always=True)
     def validate_size(cls, size: int | None, values):
         _type = values["type"]
@@ -46,6 +48,7 @@ class SystemItemImportRequest(BaseModel):
     items: list[SystemItemImport]
     updateDate: datetime
 
+    # noinspection PyMethodParameters
     @validator("items", always=True)
     def validate_parents(cls, items: list[SystemItemImport]):
         new_file_ids = set()

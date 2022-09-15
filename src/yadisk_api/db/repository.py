@@ -13,6 +13,12 @@ class Repository:
         self.session = session
 
     async def validate_item_exists(self, system_item_id: str, due_date: datetime | None = None):
+        """
+        Проверяет существует ли объект system_item с заданным id.
+        Если объект не существует или был удален, то кидает исключение ItemNotFoundError.
+        @param system_item_id: id бъекта для проверки.
+        @param due_date: дата, по состоянию на которую (включительно) проводится проверка.
+        """
         filters = [db.SystemItem.id == system_item_id, ]
         if due_date:
             filters.append(db.SystemItem.date <= due_date)
@@ -28,6 +34,11 @@ class Repository:
             raise ItemNotFoundError
 
     async def validate_parent_ids(self, parent_ids: list[str]):
+        """
+        Проверяет, что объектоы в базе данных с переданными id имеют тип 'FOLDER'.
+        Иначе кидает исключение InvalidDataError.
+        @param parent_ids: список id для проверки.
+        """
         # noinspection PyUnresolvedReferences
         rows = await self.session.execute(
             select(db.SystemItem).filter(db.SystemItem.type == db.SystemItemType.FILE,
@@ -37,6 +48,10 @@ class Repository:
             raise InvalidDataError("Imported items contain parent links to items of type 'FILE'")
 
     async def insert_items(self, items: list[db.SystemItem]):
+        """
+        Производит вставку новых и обновление существущих объектов в базе данных.
+        @param items: список объектов для вставки.
+        """
         await self._validate_item_types(items)
         await self._insert_items(items)
         await self.session.flush()
@@ -58,6 +73,7 @@ class Repository:
         self.session.add_all(loop_links)
 
     async def _insert_items_child_links(self, items: list[db.SystemItem]):
+        # TODO: gather?
         for item in items:
             if parent_id := item.parent_id:
                 await self._link_children(parent_id, item.id, item.date)
@@ -77,14 +93,14 @@ class Repository:
             self, system_item_id: str,
             due_date: datetime | None = None) -> list[db.SystemItem]:
         """
-        Get an adjacency list for a SystemItem with the given id.
-        Parameters due_date can be used to determine an upper bound of a datetime interval to select.
-        @param system_item_id: item_id of the adjacency list's root item.
-        @param due_date: Non-inclusive end point if datetime interval to select.
-        @return List of SystemItem objects (adjacency list).
-        The first item in the list is the root item.
+        Возвращает список system_item, которые образуют список смежности
+        от определенного корневого объекта.
+        Корневой элемент всегда является первым элементов возвращаемого списка.
+        @param system_item_id: идентификатор корневого элемента возвращаемого списка.
+        @param due_date: верхняя граница даты, для которой (включительно) нужно построить список смежности.
+        Если не указана, то строится актуальный на момент запроса список.
+        @return список смежности для заданного system_item. Первый элемент списка - корневой.
         """
-        # TODO: Filter out deleted elements
         stmt = select(db.SystemItem) \
             .join(db.SystemItemLink,
                   db.SystemItem.id == db.SystemItemLink.child_id) \
@@ -101,15 +117,14 @@ class Repository:
         rows = await self.session.execute(stmt)
         return [row for row, *_ in rows]
 
-    async def _get_descendants_ids(self, system_item_id) -> list[str]:
-        stmt = select(db.SystemItem.id).distinct() \
-            .join(db.SystemItemLink, db.SystemItem.id == db.SystemItemLink.child_id) \
-            .where(db.SystemItemLink.parent_id == system_item_id)
-        rows = await self.session.execute(stmt)
-        return [row for row, *_ in rows]
-
     async def get_file_updates(
             self, date_start: datetime, date_end: datetime) -> list[db.SystemItem]:
+        """
+        Возвращает изменения файлов в заданном временном интервале [date_start, date_end].
+        @param date_start: начальная дата интервала.
+        @param date_end: конечная дата интервала.
+        @return: список изменений файлов.
+        """
         # noinspection PyUnresolvedReferences
         stmt = select(db.SystemItem) \
             .filter(db.SystemItem.type == db.SystemItemType.FILE,
@@ -121,6 +136,17 @@ class Repository:
             self, system_item_id: str,
             date_start: datetime | None = None,
             date_end: datetime | None = None) -> list[datetime]:
+        """
+        Возвращает список дат изменений для элемента system_item с заданным идентификатором.
+        Список может быть ограничен параметрами: [date_start, date_end).
+        @param system_item_id: идентификатор элемента system_item,
+        для которого нужно вернуть список дат изменений.
+        @param date_start: нижняя временная граница для возвращаемого списка.
+        При отсутствии значения - список строится без учета нижней временной границы.
+        @param date_end: верхняя временная граница для возвращаемого списка.
+        При отсутствии значения - список строится без учета верхней временной границы.
+        @return: список дат изменений заданного элемента system_item.
+        """
         where_clauses = [db.SystemItemLink.parent_id == system_item_id, ]
         if date_start:
             where_clauses.append(db.SystemItemLink.date >= date_start)
