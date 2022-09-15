@@ -9,7 +9,7 @@ import urllib.request
 
 # import pytest
 
-API_BASEURL = "http://localhost:8000"
+API_BASEURL = "https://conversion-1980.usr.yandex-academy.ru"
 
 ROOT_ID = "069cb8d7-bbdd-47d3-ad8f-82ef4c269df1"
 
