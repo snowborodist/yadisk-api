@@ -209,13 +209,16 @@ def print_diff(expected, response):
                     "expected.json", "response.json"])
 
 
-# TODO: Не смог завести клиента - валится на втором запросе..
+# TODO: Клиент не заводится - валится на втором запросе..
+#       Не успел до дедлайна разобраться, пришлось тестировать вручную =(
+
 # @pytest.mark.parametrize("batch", IMPORT_BATCHES)
 # def test_import(get_test_client, batch):
 #     with get_test_client as ac:
 #         response = ac.request("POST", "/imports", data=json.dumps(batch))
 #         assert response.status_code == 200, f"Expected HTTP status code 200, got {response.status_code}"
 #     print("Test import passed.")
+
 
 def test_import():
     for index, batch in enumerate(IMPORT_BATCHES):

@@ -118,6 +118,7 @@ class Repository:
         stmt = stmt.order_by(db.SystemItem.id, db.SystemItem.date.desc(), db.SystemItemLink.depth)
 
         rows = await self.session.execute(stmt)
+        # TODO: Make the root first!!!!
         return [row for row, *_ in rows]
 
     async def get_file_updates(
