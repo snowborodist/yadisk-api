@@ -7,4 +7,4 @@ class Settings(BaseSettings):
     database_url: str
 
 
-settings = Settings()
+settings = Settings(_env_file=".dev.env")

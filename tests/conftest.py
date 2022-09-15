@@ -34,7 +34,8 @@ def get_test_settings():
     return settings
 
 
-@pytest.fixture(scope="session", autouse=True)
+# auto_use
+@pytest.fixture(scope="session")
 def database(get_test_settings):
     if database_exists(get_test_settings.database_url):
         drop_database(get_test_settings.database_url)

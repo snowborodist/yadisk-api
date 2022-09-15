@@ -74,12 +74,8 @@ class Repository:
         self.session.add_all(loop_links)
 
     async def _insert_items_child_links(self, items: list[db.SystemItem]):
-        # TODO: gather?
-        # for item in items:
-        #     if parent_id := item.parent_id:
-        #         await self._link_children(parent_id, item.id, item.date)
         await gather(*[self._link_children(item.parent_id, item.id, item.date)
-                      for item in items if item.parent_id])
+                       for item in items if item.parent_id])
 
     async def _link_children(self, parent_id: str, child_id: str, date: datetime):
         stmt = """
@@ -117,9 +113,10 @@ class Repository:
         # noinspection PyUnresolvedReferences
         stmt = stmt.order_by(db.SystemItem.id, db.SystemItem.date.desc(), db.SystemItemLink.depth)
 
-        rows = await self.session.execute(stmt)
-        # TODO: Make the root first!!!!
-        return [row for row, *_ in rows]
+        rows = [row for row, *_ in await self.session.execute(stmt)]
+        root = next(el for el in rows if el.id == system_item_id)
+        rows.remove(root)
+        return [root, *rows]
 
     async def get_file_updates(
             self, date_start: datetime, date_end: datetime) -> list[db.SystemItem]:
