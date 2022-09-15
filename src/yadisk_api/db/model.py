@@ -51,5 +51,3 @@ class SystemItemTypeMatch(Base):
 
     system_item_id = Column(String, primary_key=True)
     system_item_type = Column(Enum(SystemItemType), nullable=False)
-
-# TODO: Add indexes (parent, date, child), (child, parent, date)

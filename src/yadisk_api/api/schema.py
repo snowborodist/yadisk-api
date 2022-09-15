@@ -70,6 +70,10 @@ class SystemItemImportRequest(BaseModel):
     def parent_ids(self) -> list[str]:
         return [item.parentId for item in self.items if item.parentId is not None]
 
+    @property
+    def item_ids(self) -> list[str]:
+        return [item.id for item in self.items]
+
     class Config:
         validate_assignment = True
         json_encoders = {

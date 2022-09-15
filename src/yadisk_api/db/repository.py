@@ -73,6 +73,19 @@ class Repository:
         ]
         self.session.add_all(loop_links)
 
+    async def get_existing_parents(self, item_ids: list[str]) -> list[db.SystemItem]:
+        stmt = select(db.SystemItem) \
+            .distinct(db.SystemItem.id) \
+            .where(db.SystemItem.id.in_(item_ids)) \
+            .order_by(db.SystemItem.id, db.SystemItem.date.desc())
+        parent_ids = [item.parent_id for item, *_
+                      in await self.session.execute(stmt)]
+        stmt2 = select(db.SystemItem) \
+            .distinct(db.SystemItem.id) \
+            .where(db.SystemItem.id.in_(parent_ids)) \
+            .order_by(db.SystemItem.id, db.SystemItem.date.desc())
+        return [item for item, *_ in await self.session.execute(stmt2)]
+
     async def _insert_items_child_links(self, items: list[db.SystemItem]):
         await gather(*[self._link_children(item.parent_id, item.id, item.date)
                        for item in items if item.parent_id])
