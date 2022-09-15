@@ -35,7 +35,7 @@ class Repository:
 
     async def validate_parent_ids(self, parent_ids: list[str]):
         """
-        Проверяет, что объектоы в базе данных с переданными id имеют тип 'FOLDER'.
+        Проверяет, что объекты в базе данных с переданными id имеют тип 'FOLDER'.
         Иначе кидает исключение InvalidDataError.
         @param parent_ids: список id для проверки.
         """
@@ -93,7 +93,7 @@ class Repository:
             self, system_item_id: str,
             due_date: datetime | None = None) -> list[db.SystemItem]:
         """
-        Возвращает список system_item, которые образуют список смежности
+        Возвращает объекты system_item, которые образуют список смежности
         от определенного корневого объекта.
         Корневой элемент всегда является первым элементов возвращаемого списка.
         @param system_item_id: идентификатор корневого элемента возвращаемого списка.

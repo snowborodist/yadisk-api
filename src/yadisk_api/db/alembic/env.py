@@ -20,8 +20,8 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-
-config.set_main_option('sqlalchemy.url', str(settings.database_url.replace("+asyncpg", "")))
+if not config.get_main_option("testing"):
+    config.set_main_option('sqlalchemy.url', str(settings.database_url.replace("+asyncpg", "")))
 target_metadata = metadata
 
 # other values from the config, defined by the needs of env.py,
